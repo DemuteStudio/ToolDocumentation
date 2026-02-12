@@ -4,6 +4,7 @@ As Dan Reynolds, the father of Metasounds, said: “Metasounds are not just an i
 ## Manual Installation
 
 In the root folder of your project, create a plugins folder if it doesn’t already exist. Drag the `Demute_Metasound_PresetsAndPatches` folder into that new plugins folder. Then activate the new plugin in edit > plugins (along with the base Metasound plugin).
+<img width="773" height="168" alt="image" src="https://github.com/user-attachments/assets/a057d113-4ecd-4204-9173-95979c24f2a8" />
 
 
 ## How to Use
