@@ -1,10 +1,8 @@
 ## Introduction
 As Dan Reynolds, the father of Metasounds, said: “_Metasounds are not just an implementation environment, they're a design environment._” Yet in game audio, most implementation follows a handful of common designs. This pack provides professionally crafted presets for those designs, along with useful patches and a runtime debugging tool for faster, easier implementation.
 
-## Manual Installation
-In the root folder of your project, create a plugins folder if it doesn’t already exist. Drag the `Demute_Metasound_PresetsAndPatches` folder into that new plugins folder. Then activate the new plugin in edit > plugins (along with the base Metasound plugin).
-
-<img width="777" height="169" alt="image" src="https://github.com/user-attachments/assets/2086f04c-ecf0-4915-9acb-967b9c88bfb2" />
+## Installation
+The Unreal Audio Animation Tool is part of the Unreal Tech Audio Tools plugin, so follow the installation instructions there.
 
 ## How to Use
 #### Source Graphs & Patches
