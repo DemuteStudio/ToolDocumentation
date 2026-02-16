@@ -7,59 +7,6 @@
 
 ---
 
-## Table of Contents
-
-- [Introduction](#introduction)
-- [Key Features](#key-features)
-- [Choosing an Audio Backend](#choosing-an-audio-backend)
-- [Setup](#setup)
-  - [Installing the Plugin](#installing-the-plugin)
-  - [Project Settings](#project-settings)
-- [Prerequisites and Backend Setup](#prerequisites-and-backend-setup)
-  - [FMOD Studio Backend](#fmod-studio-backend)
-  - [Native Audio Backend](#native-audio-backend)
-- [Creating Voice-Over Data](#creating-voice-over-data)
-  - [Overview](#overview)
-  - [For FMOD Backend](#for-fmod-backend)
-  - [For Native Backend](#for-native-backend)
-  - [Common Properties](#common-properties)
-- [Using the Subsystem](#using-the-subsystem)
-  - [Getting the Subsystem](#getting-the-subsystem)
-- [Playing Voice-Overs](#playing-voice-overs)
-  - [2D Audio (Non-Spatialized)](#2d-audio-non-spatialized)
-  - [3D Audio at Fixed Location](#3d-audio-at-fixed-location)
-  - [3D Audio Attached to Component](#3d-audio-attached-to-component)
-- [VO Playback Handle](#vo-playback-handle)
-  - [What is a VOPlaybackHandle?](#what-is-a-voplaybackhandle)
-  - [Return Value](#return-value)
-  - [Playback Events](#playback-events)
-  - [Progress Tracking](#progress-tracking)
-  - [State Checking](#state-checking)
-  - [Spatialization Information](#spatialization-information)
-- [Runtime Data Table Management](#runtime-data-table-management)
-  - [LoadDataTable](#loaddatatable)
-  - [UnloadDataTable](#unloaddatatable)
-  - [IsDataTableLoaded](#isdatatableloaded)
-- [Playback Control](#playback-control)
-  - [IsPlaying](#isplaying)
-  - [StopPlayback](#stopplayback)
-  - [ClearQueue](#clearqueue)
-- [Understanding Priorities](#understanding-priorities)
-  - [TriggerPriority](#triggerpriority)
-  - [PlaybackPriority](#playbackpriority)
-  - [Priority Examples](#priority-examples)
-- [Queue Behavior](#queue-behavior)
-- [C++ API Quick Reference](#c-api-quick-reference)
-  - [Playback Methods](#playback-methods)
-  - [Data Table Management](#data-table-management)
-  - [Playback Control](#playback-control-1)
-- [Backend-Specific Considerations](#backend-specific-considerations)
-  - [FMOD Backend Notes](#fmod-backend-notes)
-  - [Native Backend Notes](#native-backend-notes)
-- [License](#license)
-
----
-
 ## Introduction
 
 The Voice Manager Subsystem is a game instance subsystem for managing voice-over playback in Unreal Engine 5.7. It provides sophisticated control over VO playback through a double priority system, automatic queueing, and intelligent interruption handling.
@@ -68,54 +15,16 @@ The Voice Manager is part of the **Demute Tech Audio Toolkit** and supports two 
 - **FMOD Studio Backend** - Uses FMOD's event system with programmer sounds and localization
 - **Native Audio Backend** - Uses Unreal Engine's built-in audio system with USoundWave assets
 
-This unified documentation covers both backends, with clear sections indicating backend-specific information.
-
 ---
 
 ## Key Features
 
 - **Dual Backend Support**: Choose between FMOD Studio or Native UE Audio based on your project needs
-- **Double Priority System**: Separate priorities for triggering (TriggerPriority) and during playback (PlaybackPriority) with configurable grace periods
-- **Priority-Based Queue**: Automatically manages VO playback order based on priority levels
-- **Smart Interruption**: Higher priority VOs can interrupt lower priority ones with configurable grace periods
+- **Dual-Priority System**: Automatically manages VO playback order based on separate priorities for triggering and during playback
+- **Run Custom Logic**: Delegates avilable to run logic on specific VO start and finish
 - **3D Spatialization**: Support for 2D audio, 3D at location, and 3D attached to components
 - **Cooldown & No-Repeat Management**: Prevent VOs from playing too frequently
-- **Runtime Data Table Loading**: Dynamically load and unload VO data tables at runtime
-- **Blueprint-Friendly**: Full Blueprint support for all major features
-
----
-
-## Choosing an Audio Backend
-
-The Voice Manager allows you to select which audio backend to use via the **AudioBackend** project setting. Choose the backend that best fits your project's needs.
-
-### Quick Comparison
-
-| Feature | FMOD Studio Backend | Native Audio Backend |
-|---------|-------------------|---------------------|
-| **External Dependencies** | Requires FMOD Studio Plugin | None - Built into UE |
-| **Audio Assets** | FMODEvent with Programmer Sounds | USoundWave assets |
-| **Localization** | FMOD audio tables and localization keys | Standard UE localization |
-| **Variation System** | LocalizationKeys array | SoundWaves array |
-| **Advanced Features** | Full FMOD Studio feature set | Standard UE audio features |
-| **Setup Complexity** | Moderate (requires FMOD setup) | Simple (no external tools) |
-| **Best For** | Projects already using FMOD, complex audio needs | Projects using UE audio, simpler setup |
-
-### When to Choose FMOD Backend
-
-- Your project already uses FMOD Studio
-- You need advanced FMOD features (adaptive audio, complex DSP chains)
-- You want centralized audio management in FMOD Studio
-- Your audio team is familiar with FMOD workflows
-
-### When to Choose Native Backend
-
-- You want to minimize external dependencies
-- Your project uses Unreal's native audio system
-- You need a simpler setup and integration process
-- You prefer working entirely within Unreal Engine
-
-**Note:** The backend selection is project-wide and affects all Voice Manager functionality. You cannot mix backends within a single project.
+- **Blueprint-Friendly**: Full Blueprint support for all features
 
 ---
 
@@ -123,11 +32,7 @@ The Voice Manager allows you to select which audio backend to use via the **Audi
 
 ### Installing the Plugin
 
-1. Copy the `Demute_VO_Manager` folder to your project's `Plugins` directory
-2. Regenerate Visual Studio project files
-3. Rebuild your project
-4. Enable the plugin in **Edit → Plugins → Voice Over Manager**
-5. Go to **Edit → Project Settings → Plugins → Voice Over Manager** and select your preferred **AudioBackend** (FMOD or Native)
+`Link to the toolkit installation instructions`
 
 ### Project Settings
 
@@ -166,18 +71,9 @@ Access Voice Over Manager settings at **Edit → Project Settings → Plugins �
 
 **Backend-specific requirements when using the FMOD audio backend.**
 
-#### FMOD Studio Plugin Installation
+The FMOD backend requires the **FMOD Studio Plugin for Unreal Engine.**
 
-The FMOD backend requires the **FMOD Studio Plugin for Unreal Engine**:
-
-1. Download FMOD Studio Plugin from [FMOD.com](https://www.fmod.com/download)
-2. Install the plugin to your engine or project
-3. Enable the plugin in **Edit → Plugins → FMOD Studio**
-4. Configure FMOD settings in **Edit → Project Settings → Plugins → FMOD Studio**
-
-#### FMOD Event Requirements
-
-**IMPORTANT:** For the Voice Manager to work with FMOD, your FMOD events must include a **Programmer Sound** instrument:
+**IMPORTANT:** For the Voice Manager to work with FMOD, your FMOD events must include a **Programmer Sound** instrument, and the sound bank must contain an **Audio Table**:
 
 1. **Open FMOD Studio**
 2. **Create or Open Event:** Open your voice-over event
@@ -188,58 +84,14 @@ The FMOD backend requires the **FMOD Studio Plugin for Unreal Engine**:
    - Set up 3D spatializer if needed (spatializer settings in FMOD Studio)
    - Add any additional effects (reverb, EQ, etc.)
    - Configure attenuation curves for distance-based volume
-5. **Build Banks:** Build your FMOD banks and ensure they're loaded in Unreal
-
-#### FMOD Localization Setup
-
-The Voice Manager uses FMOD's **programmer sound** system to dynamically load audio files based on localization keys.
-
-**Option 1: Using LocalizationKeys Array (Recommended)**
-
-**In FMOD Studio:**
-1. Create audio tables for your localization keys
-2. Assign audio files to each key (e.g., `"VO_Player_Damage_01"` → `player_damage_01.ogg`)
-3. Configure localization in FMOD Studio (File → Preferences → Assets)
-4. Build banks
-
-**In Unreal Data Table:**
-```
-Row Name: Player_Damage
-FMODEvent: Event:/VO/PlayerBarks
-LocalizationKeys: ["VO_Player_Damage_01", "VO_Player_Damage_02", "VO_Player_Damage_03"]
-```
-
-**Result:** When triggered, the Voice Manager will randomly select one of the three keys and pass it to FMOD's programmer sound, which loads the corresponding audio file.
-
-**Option 2: Using VOID (Row Name as Key)**
-
-If `LocalizationKeys` is empty, the **Row Name** is used as the localization key.
-
-**In FMOD Studio:**
-1. Create audio table entry for `"Player_Damage_Heavy"` → `player_damage_heavy.ogg`
-2. Build banks
-
-**In Unreal Data Table:**
-```
-Row Name: Player_Damage_Heavy
-FMODEvent: Event:/VO/PlayerBarks
-LocalizationKeys: [] (empty array)
-```
-
-**Result:** The Voice Manager passes `"Player_Damage_Heavy"` to FMOD's programmer sound.
-
-**Use Cases:**
-- Single audio file per VO entry
-- Simple setups without variation
-- Direct mapping between Unreal ID and FMOD key
-
----
+5. **Create Audio Table:**
+   - Right click the bank in which you've assigned your programmer instrument event and create a new audio table (**this works better if it's not the master bank**)
+   - If your game's audio will be localised, create a localised table instead of a regular audio table
+   - Browse the audio table to a folder where your audio files are located, it will automatically create the audio table keys
+   - Change any of the keys if you wish, these are what will allow you to play your audio using our voice over system
+6. **Build Banks:** Build your FMOD banks and ensure they're loaded in Unreal
 
 ### Native Audio Backend
-
-**Backend-specific requirements when using the Native audio backend.**
-
-#### Prerequisites
 
 **No external prerequisites required!** The Native backend uses Unreal Engine's built-in audio system.
 
@@ -252,6 +104,8 @@ LocalizationKeys: [] (empty array)
 ---
 
 ## Creating Voice-Over Data
+
+Voice-over data is all the information (such as each VO's priority) that the system requires to function.
 
 ### Overview
 
@@ -266,7 +120,7 @@ Voice-Over data can be organized in two ways:
 **Data Assets** (For special cases)
 - Standalone VO configurations
 - Direct Blueprint references
-- Good for one-off or procedural VOs
+- Good for one-off or procedural VO configuration
 - Used with `PlayUnregisteredVO` methods
 
 **Important:** You must use backend-specific data structures:
@@ -289,7 +143,7 @@ Voice-Over data can be organized in two ways:
 #### FMOD-Specific Row Properties
 
 **Row Name** (FName)
-- Unique identifier for this VO
+- Unique identifier for this VO (needs to be unique between all tables)
 - Used when calling `PlayRegisteredVO2D`, `PlayRegisteredVOAtLocation`, `PlayRegisteredVOAttached`
 - **Also serves as fallback VOID** (Voice Over ID) if no localization keys are provided
 - Example: `Player_Damage_Heavy`, `Boss_Taunt_01`
@@ -298,7 +152,7 @@ Voice-Over data can be organized in two ways:
 - Reference to the FMOD Event asset
 - **Must contain a Programmer Sound instrument**
 - The programmer sound will play the audio file corresponding to the selected localization key
-- Configure 3D spatialization and attenuation in FMOD Studio for the event
+- Configure 3D spatialization and attenuation in FMOD Studio for the event as well as additional processing for the voice if required
 
 **LocalizationKeys** (Array of FString)
 - Array of localization key strings that FMOD will use to load audio files
@@ -339,7 +193,7 @@ VOInfo_FMOD Data Assets have the same properties as data table rows:
 #### Native-Specific Row Properties
 
 **Row Name** (FName)
-- Unique identifier for this VO
+- Unique identifier for this VO (needs to be unique between all tables)
 - Used when calling `PlayRegisteredVO2D`, `PlayRegisteredVOAtLocation`, `PlayRegisteredVOAttached`
 - Example: `Player_Damage_Heavy`, `Boss_Taunt_01`
 
@@ -411,7 +265,7 @@ VOInfo_Native Data Assets have the same properties as data table rows:
 
 **DisplayName** (Text, optional)
 - Human-readable description for editor organization
-- Not used at runtime, purely for documentation in the data table
+- Not used at runtime, purely for documentation in the data table or logging
 
 #### When to Use VOInfo Assets vs Data Tables
 
@@ -422,7 +276,6 @@ VOInfo_Native Data Assets have the same properties as data table rows:
 
 **Use VOInfo Data Assets when:**
 - You have a one-off VO that doesn't fit into existing tables
-- You're prototyping and want quick iteration
 - You need direct Blueprint references to specific VOs
 - You're creating procedurally configured VOs in C++
 
@@ -604,41 +457,19 @@ A VOPlaybackHandle is a Blueprint-friendly object that provides:
 
 The VOPlaybackHandle works identically for both FMOD and Native backends.
 
+_All handle methods are available in both c++ and blueprints._
+
 ### Return Value
 
 **When is a null handle returned?**
 - **PlayRegisteredVO*** methods: Returns null only if the VO ID is not found in any loaded data tables
 - **PlayUnregisteredVO*** methods: Returns null only if you pass a null VOInfo parameter
 
+**Should only happen if there is a problem with the setup.**
+
 **When is a valid handle with Rejected state returned?**
 - VO is on cooldown
 - VO cannot play due to priority and bToQueue is false
-
-**Always check both null and rejection state:**
-
-```cpp
-UVOPlaybackHandle* Handle = VOSubsystem->PlayRegisteredVO2D(FName("MyVO"));
-if (Handle == nullptr)
-{
-    // VO ID not found in data tables
-    UE_LOG(LogTemp, Error, TEXT("VO ID not found"));
-}
-else if (Handle->WasRejected())
-{
-    // VO was rejected (cooldown, priority, etc.)
-    UE_LOG(LogTemp, Warning, TEXT("VO was rejected (cooldown or priority)"));
-}
-else if (Handle->IsQueued())
-{
-    // VO is queued and will play later
-    UE_LOG(LogTemp, Log, TEXT("VO queued"));
-}
-else if (Handle->IsPlaying())
-{
-    // VO started playing immediately
-    UE_LOG(LogTemp, Log, TEXT("VO playing"));
-}
-```
 
 ### Playback Events
 
@@ -671,15 +502,11 @@ void UMyClass::HandleVOFinished(UVOPlaybackHandle* Handle)
 
 ### Progress Tracking
 
-Query playback progress in real-time:
-
-**Blueprint:**
-```
-Handle → GetCurrentPlaytime → Returns float (seconds)
-Handle → GetTotalDuration → Returns float (seconds)
-Handle → GetTimeRemaining → Returns float (seconds)
-Handle → GetPlaybackProgress → Returns float (0.0 to 1.0)
-```
+**Available Methods:**
+- float GetCurrentPlaytime - current playback time in seconds
+- float GetTotalDuration - total duration of file in seconds
+- float GetTimeRemaining - amount of play time remaining in seconds
+- float GetPlaybackProgress - 0 to 1, with 0 being unstarted and 1 being finished
 
 **C++ Example:**
 ```cpp
@@ -959,7 +786,7 @@ bool ClearQueue();
 - LocalizationKeys must match entries in FMOD audio tables
 
 **Best Practices**
-- Use audio tables in FMOD Studio for localization
+- Use audio tables in FMOD Studio
 - Build and load banks during level load or game startup
 - Configure attenuation and spatialization in FMOD Studio, not in Unreal
 - Test localization keys to ensure they match FMOD audio table entries
