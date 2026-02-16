@@ -15,9 +15,7 @@ The Voice Manager is part of the **Demute Tech Audio Toolkit** and supports two 
 - **FMOD Studio Backend** - Uses FMOD's event system with programmer sounds and localization
 - **Native Audio Backend** - Uses Unreal Engine's built-in audio system with USoundWave assets
 
----
-
-## Key Features
+### Key Features
 
 - **Dual Backend Support**: Choose between FMOD Studio or Native UE Audio based on your project needs
 - **Dual-Priority System**: Automatically manages VO playback order based on separate priorities for triggering and during playback
@@ -36,7 +34,11 @@ The Voice Manager is part of the **Demute Tech Audio Toolkit** and supports two 
 
 ### Project Settings
 
-Access Voice Over Manager settings at **Edit → Project Settings → Plugins → Voice Over Manager**
+Access Voice Over Manager settings at **Edit → Project Settings → Plugins → Voice Over Manager**.
+
+<img width="704" height="138" alt="image" src="https://github.com/user-attachments/assets/5d47d467-4cfa-4e8e-a4a6-02ee6470fe3a" />
+
+Make sure to correctly set your audio backend depending on whether you are using **Native** Unreal audio, or **Fmod**.
 
 #### Settings Reference
 
@@ -45,6 +47,12 @@ Access Voice Over Manager settings at **Edit → Project Settings → Plugins �
 - **Native**: Use Unreal Engine's native audio system (no external dependencies)
 - This determines which audio backend is loaded at runtime
 - **Important:** Backend-specific data tables must match the selected backend
+
+**VoiceOverDataTables** (array of Data Table references)
+- List of VO data tables to load automatically when the game instance starts
+- These tables remain loaded for the entire game session and cannot be unloaded at runtime
+- Use this for core VOs that are always needed
+- **Important:** Tables must match your selected AudioBackend (VOInfoTableRow_FMOD or VOInfoTableRow_Native)
 
 **VODelayTime** (float, default: 1.0)
 - Delay in seconds between consecutive VO playbacks
@@ -56,12 +64,6 @@ Access Voice Over Manager settings at **Edit → Project Settings → Plugins �
 - Maximum remaining time (in seconds) under which an interrupting VO will wait for the current line to finish
 - If the current VO has less than this amount of time remaining, the higher priority VO will wait instead of interrupting
 - Prevents jarring interruptions near the end of lines
-
-**VoiceOverDataTables** (array of Data Table references)
-- List of VO data tables to load automatically when the game instance starts
-- These tables remain loaded for the entire game session and cannot be unloaded at runtime
-- Use this for core VOs that are always needed
-- **Important:** Tables must match your selected AudioBackend (VOInfoTableRow_FMOD or VOInfoTableRow_Native)
 
 ---
 
@@ -91,6 +93,8 @@ The FMOD backend requires the **FMOD Studio Plugin for Unreal Engine.**
    - Change any of the keys if you wish, these are what will allow you to play your audio using our voice over system
 6. **Build Banks:** Build your FMOD banks and ensure they're loaded in Unreal
 
+<img width="1119" height="695" alt="image" src="https://github.com/user-attachments/assets/fb934f10-c589-40cc-bf76-80def0a48cea" />
+
 ### Native Audio Backend
 
 **No external prerequisites required!** The Native backend uses Unreal Engine's built-in audio system.
@@ -117,11 +121,19 @@ Voice-Over data can be organized in two ways:
 - Easy to manage large sets of VOs
 - Can be added to Project Settings for automatic loading
 
+<img width="1132" height="169" alt="image" src="https://github.com/user-attachments/assets/d38d09c7-11cb-4482-900d-d3deff415dd2" />
+
+---
+
 **Data Assets** (For special cases)
 - Standalone VO configurations
 - Direct Blueprint references
 - Good for one-off or procedural VO configuration
 - Used with `PlayUnregisteredVO` methods
+
+<img width="1035" height="420" alt="image" src="https://github.com/user-attachments/assets/c1941b3c-0ca9-47db-b518-6be55a237d46" />
+
+---
 
 **Important:** You must use backend-specific data structures:
 - **FMOD Backend**: Use `VOInfoTableRow_FMOD` and `VOInfo_FMOD`
@@ -146,6 +158,7 @@ Voice-Over data can be organized in two ways:
 - Unique identifier for this VO (needs to be unique between all tables)
 - Used when calling `PlayRegisteredVO2D`, `PlayRegisteredVOAtLocation`, `PlayRegisteredVOAttached`
 - **Also serves as fallback VOID** (Voice Over ID) if no localization keys are provided
+- **Important:** This cannot be changed in the `Row Editor` window and must be done by double-clicking on the `Row Name` column for the corresponding row
 - Example: `Player_Damage_Heavy`, `Boss_Taunt_01`
 
 **FMODEvent** (UFMODEvent reference)
@@ -195,6 +208,7 @@ VOInfo_FMOD Data Assets have the same properties as data table rows:
 **Row Name** (FName)
 - Unique identifier for this VO (needs to be unique between all tables)
 - Used when calling `PlayRegisteredVO2D`, `PlayRegisteredVOAtLocation`, `PlayRegisteredVOAttached`
+- **Important:** This cannot be changed in the `Row Editor` window and must be done by double-clicking on the `Row Name` column for the corresponding row
 - Example: `Player_Damage_Heavy`, `Boss_Taunt_01`
 
 **SoundWaves** (Array of USoundWave references)
@@ -277,7 +291,7 @@ VOInfo_Native Data Assets have the same properties as data table rows:
 **Use VOInfo Data Assets when:**
 - You have a one-off VO that doesn't fit into existing tables
 - You need direct Blueprint references to specific VOs
-- You're creating procedurally configured VOs in C++
+- You're creating procedurally configured VOs
 
 ---
 
@@ -285,8 +299,9 @@ VOInfo_Native Data Assets have the same properties as data table rows:
 
 ### Getting the Subsystem
 
-**In Blueprint:**
-- Use **Get Voice Over Manager Subsystem** node
+**In Blueprint:** Use **Get Voice Over Manager Subsystem** node
+
+<img width="510" height="171" alt="Screenshot (2)" src="https://github.com/user-attachments/assets/51f24f6b-64e5-4502-8c68-2093ea8cfde7" />
 
 **In C++:**
 ```cpp
@@ -314,20 +329,12 @@ Plays a VO by its Row Name from a loaded data table in 2D (non-spatialized).
 **Returns:** `UVOPlaybackHandle*` - Handle for tracking this playback (null if VO ID not found in data tables; valid handle with Rejected state if on cooldown)
 
 **Blueprint Example:**
-```
-Get Voice Over Manager Subsystem → PlayRegisteredVO2D
-                                    ID: "Player_Damage_Heavy"
-                                    → Returns: VOPlaybackHandle
-```
+
+<img width="519" height="189" alt="image" src="https://github.com/user-attachments/assets/8bc538b3-7e8d-41de-ba28-7bd2bb3b1d6f" />
 
 **C++ Example:**
 ```cpp
 UVOPlaybackHandle* Handle = VOSubsystem->PlayRegisteredVO2D(FName("Player_Damage_Heavy"));
-if (Handle)
-{
-    Handle->OnVOStarted.AddDynamic(this, &UMyClass::HandleVOStarted);
-    Handle->OnVOFinished.AddDynamic(this, &UMyClass::HandleVOFinished);
-}
 ```
 
 **Backend Notes:**
@@ -364,12 +371,9 @@ Plays a VO at a specific world location with 3D spatialization.
 **Returns:** `UVOPlaybackHandle*` - Handle for tracking this playback (null if VO ID not found in data tables; valid handle with Rejected state if on cooldown)
 
 **Blueprint Example:**
-```
-Get Voice Over Manager Subsystem → PlayRegisteredVOAtLocation
-                                    ID: "Enemy_Death_Scream"
-                                    Location: [Target Actor Location]
-                                    → Returns: VOPlaybackHandle
-```
+
+<img width="543" height="225" alt="image" src="https://github.com/user-attachments/assets/80bd9966-9f25-4d02-9359-2c330253d06e" />
+
 
 **C++ Example:**
 ```cpp
@@ -410,12 +414,9 @@ Plays a VO attached to a scene component, following its movement.
 **Returns:** `UVOPlaybackHandle*` - Handle for tracking this playback (null if VO ID not found in data tables; valid handle with Rejected state if on cooldown)
 
 **Blueprint Example:**
-```
-Get Voice Over Manager Subsystem → PlayRegisteredVOAttached
-                                    ID: "Character_Breathing"
-                                    AttachComponent: HeadComponent
-                                    → Returns: VOPlaybackHandle
-```
+
+<img width="517" height="217" alt="image" src="https://github.com/user-attachments/assets/15cb22dc-9e5e-43ba-a2ef-cab5cb0425fe" />
+
 
 **C++ Example:**
 ```cpp
@@ -475,9 +476,9 @@ _All handle methods are available in both c++ and blueprints._
 
 Subscribe to delegates to be notified when playback starts or finishes:
 
-**Blueprint:**
-1. Store the returned VOPlaybackHandle in a variable
-2. Use **Bind Event to On VO Started** and **Bind Event to On VO Finished** nodes
+**Blueprint:** Use the **Assign On** nodes to get a delegate to when the vo starts playing, or when it finishes playing.
+
+<img width="1100" height="372" alt="image" src="https://github.com/user-attachments/assets/1ea7776c-f6a4-465d-af73-e9b4b8826ebb" />
 
 **C++:**
 ```cpp
@@ -503,10 +504,10 @@ void UMyClass::HandleVOFinished(UVOPlaybackHandle* Handle)
 ### Progress Tracking
 
 **Available Methods:**
-- float GetCurrentPlaytime - current playback time in seconds
-- float GetTotalDuration - total duration of file in seconds
-- float GetTimeRemaining - amount of play time remaining in seconds
-- float GetPlaybackProgress - 0 to 1, with 0 being unstarted and 1 being finished
+- `float GetCurrentPlaytime` - current playback time in seconds
+- `float GetTotalDuration` - total duration of file in seconds
+- `float GetTimeRemaining` - amount of play time remaining in seconds
+- `float GetPlaybackProgress` - 0 to 1, with 0 being unstarted and 1 being finished
 
 **C++ Example:**
 ```cpp
@@ -531,26 +532,28 @@ if (Handle && Handle->IsPlaying())
 
 **State Lifecycle:**
 ```
-Null Handle → Rejected (ID not found, null VOInfo)
+Null Handle (ID not found, null VOInfo)
 
 Valid Handle:
+    → Rejected (on cooldown / lower priority & not set to queue)
     → Queued → Playing → Finished (completed)
-              ↘ Finished (interrupted)
+                 ↘ Finished (interrupted)
     → Playing → Finished (if played immediately)
 ```
 
 ### Spatialization Information
 
 **Available Methods:**
-- `EVOSpatializationMode GetSpatializationMode()` - Returns VO2D, VOLocation, or VOAttached
+- `EVOSpatializationMode GetSpatializationMode()` - Returns VO2D, VOLocation, or VOAttached (enum)
 - `FVector GetPlaybackLocation()` - World location (only valid when mode is VOLocation)
 - `USceneComponent* GetAttachedComponent()` - Attached component (only valid when mode is VOAttached)
-- `UVOInfoBase* GetVOInfo()` - The VOInfo being played
+- `UVOInfoBase* GetVOInfo()` - The VOInfo being played (even if using registered vo, will return a VOInfo that represents the row information)
 - `FString GetDisplayName()` - Display name for debugging
 
 ---
 
 ## Runtime Data Table Management
+_All these methods are available to the subsystem._
 
 ### LoadDataTable
 
@@ -561,18 +564,6 @@ Loads a data table at runtime and assigns it a unique ID.
 - `DataTable` (UDataTable*): The data table to load
 
 **Returns:** `bool` - True if loaded successfully
-
-**Blueprint Example:**
-```
-Get Voice Over Manager Subsystem → LoadDataTable
-                                    TableID: "DynamicBossBark"
-                                    DataTable: [Your Data Table]
-```
-
-**C++ Example:**
-```cpp
-VOSubsystem->LoadDataTable(FName("DynamicBossBark"), BossDataTable);
-```
 
 **Notes:**
 - TableID must be unique (cannot duplicate existing IDs)
@@ -591,12 +582,6 @@ Unloads a dynamically loaded data table.
 - `TableID` (FName): The ID used when loading the table
 
 **Returns:** `bool` - True if unloaded successfully
-
-**Blueprint Example:**
-```
-Get Voice Over Manager Subsystem → UnloadDataTable
-                                    TableID: "DynamicBossBark"
-```
 
 **Notes:**
 - Cannot unload tables loaded from Project Settings (only dynamically loaded tables)
@@ -618,6 +603,7 @@ Checks if a data table with the given ID is currently loaded.
 ---
 
 ## Playback Control
+_All these methods are available to the subsystem._
 
 ### IsPlaying
 
@@ -653,26 +639,17 @@ Empties the entire VO queue without affecting current playback.
 
 The Voice Manager uses a **double priority system** to provide fine-grained control over interruption and queueing. This system works identically for both FMOD and Native backends.
 
-### TriggerPriority
-
-Used when a VO **attempts to play**. Compared against the `PlaybackPriority` of the currently playing VO.
+- **Trigger Priority:** Used when a VO **attempts to play**. Compared against the `PlaybackPriority` of the currently playing VO.
+- **Playback Priority:** Used **while a VO is actively playing**. Determines resistance to being interrupted by incoming VOs.
 
 **Logic:**
 - If `TriggerPriority > PlaybackPriority` of current VO:
   - **Interrupt** (if remaining time > `VOAllowFinishTime`)
+     - **Queue Interrupted VO** (if that VO has `bQueueOnInterrupt` set to true)
   - **Wait as PendingVO** (if remaining time ≤ `VOAllowFinishTime`)
 - If `TriggerPriority ≤ PlaybackPriority` of current VO:
   - **Queue** (if `bToQueue` is true)
   - **Discard** (if `bToQueue` is false)
-
-### PlaybackPriority
-
-Used **while a VO is actively playing**. Determines resistance to being interrupted by incoming VOs.
-
-**Logic:**
-- Higher `PlaybackPriority` = harder to interrupt
-- Can be set lower than `TriggerPriority` for VOs that should start easily but can be interrupted
-- Can be set higher than `TriggerPriority` for VOs that are hard to start but won't be interrupted once playing
 
 ### Priority Examples
 
