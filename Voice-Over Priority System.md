@@ -71,8 +71,6 @@ Make sure to correctly set your audio backend depending on whether you are using
 
 ### FMOD Studio Backend
 
-**Backend-specific requirements when using the FMOD audio backend.**
-
 The FMOD backend requires the **FMOD Studio Plugin for Unreal Engine.**
 
 **IMPORTANT:** For the Voice Manager to work with FMOD, your FMOD events must include a **Programmer Sound** instrument, and the sound bank must contain an **Audio Table**:
