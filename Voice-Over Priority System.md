@@ -299,7 +299,7 @@ VOInfo_Native Data Assets have the same properties as data table rows:
 
 **In Blueprint:** Use **Get Voice Over Manager Subsystem** node
 
-<img width="510" height="171" alt="Screenshot (2)" src="https://github.com/user-attachments/assets/51f24f6b-64e5-4502-8c68-2093ea8cfde7" />
+<img width="510" height="171" alt="getsubsystem" src="https://github.com/user-attachments/assets/edcf443a-1028-43ed-9277-0ad2b3173362" />
 
 **In C++:**
 ```cpp
